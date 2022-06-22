@@ -1,0 +1,11 @@
+
+*.gz
+data/FashionMNIST/raw/t10k-images-idx3-ubyte
+running1.ipynb
+models/__pycache__/net1.cpython-39.pyc
+models/__pycache__/net1.cpython-37.pyc
+data/FashionMNIST/raw/train-labels-idx1-ubyte
+data/FashionMNIST/raw/train-images-idx3-ubyte
+data/FashionMNIST/raw/t10k-labels-idx1-ubyte
+__pycache__/utils.cpython-39.pyc
+.pylint.d/test11.stats
