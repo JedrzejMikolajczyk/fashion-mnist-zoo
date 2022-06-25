@@ -45,7 +45,9 @@ def predict(images, model, device, only_label = True):
     with torch.no_grad():
         for X in images:
             X = X.to(device)
+            print(X.shape)
             X = torch.unsqueeze(X, dim=0)
+            X = X[None, :,:,:]
             print(X.shape)
             pred = model(X)
             print(pred.shape)
