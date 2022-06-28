@@ -17,11 +17,10 @@ from models.cnn import CNN
 import utils
 
 
-import argparse
 
 
 if __name__ == '__main__':
-    
+    import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument("--n_epochs", type=int, default=10, help="number of epochs of training")
     parser.add_argument("--ratio", type=float, default=0.8, help="portion of samples that is used for training (remaining part used for validation during training)")
