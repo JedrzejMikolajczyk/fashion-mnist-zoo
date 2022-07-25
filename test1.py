@@ -11,7 +11,7 @@ import torchvision
 from torchvision import datasets, transforms
 
 import utils
-from models.net1 import Net1
+from models import *
 
 seed = 42
 labels = ['t_shirt_top', 'trouser', 'pullover', 'dress', 'coat', 'sandal', 'shirt', 'sneaker', 'bag', 'ankle_boots']
@@ -46,12 +46,17 @@ print(train_loader, test_loader)
 device = 'cuda' if torch.cuda.is_available() else "cpu"
 
 
-model = Net1()
-model.load_state_dict(torch.load("model2.pth"))
+model = cnn.CNN()
+model2 = net1.Net1()
+
+model.load_state_dict(torch.load("weights/434model1.pth"))
+model2.load_state_dict(torch.load("weights/model2-linear.pth"))
 
 loss_fn = nn.CrossEntropyLoss()
 
 print(utils.test(test_loader, model, loss_fn, device))
+print(utils.test(test_loader, model2, loss_fn, device))
+
 
 utils.save_sample(supersample)
 print(supersample.shape)

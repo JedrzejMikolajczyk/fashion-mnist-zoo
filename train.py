@@ -12,7 +12,7 @@ from torchvision import datasets, transforms
 
 #from models.net1 import Net1
 
-from models.cnn import CNN
+from models import *
 
 import utils
 
@@ -26,6 +26,8 @@ if __name__ == '__main__':
     parser.add_argument("--ratio", type=float, default=0.8, help="portion of samples that is used for training (remaining part used for validation during training)")
     parser.add_argument("--batch_size", type=int, default=64, help="size of the batches")
     parser.add_argument("--lr", type=float, default=0.0002, help="adam: learning rate")
+    parser.add_argument("--save_as", type=str, default='model1.pth', help="name a model is to be saved as")
+    parser.add_argument("--train_all", type=bool, default=False, help="run training of all models in the models folder")
     args = parser.parse_args()
 
 
@@ -53,7 +55,7 @@ if __name__ == '__main__':
     
     device = 'cuda' if torch.cuda.is_available() else "cpu"
     
-    model = CNN()
+    model = Linear()
     
     
     loss_fn = nn.CrossEntropyLoss()
@@ -67,7 +69,7 @@ if __name__ == '__main__':
         current_val_loss = utils.test(test_loader, model, loss_fn, device)
         if current_val_loss < val_loss:
             val_loss = current_val_loss
-            torch.save(model.state_dict(), "ttt1.pth")
+            torch.save(model.state_dict(), "lin1.pth")
             print("Model1 saved")
     print("Done!", val_loss)
 
