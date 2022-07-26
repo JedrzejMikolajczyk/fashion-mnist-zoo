@@ -12,7 +12,7 @@ from torchvision import datasets, transforms
 
 #from models.net1 import Net1
 
-from models import *
+from models import ModelFactory
 
 import utils
 
@@ -22,13 +22,18 @@ import utils
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument("--n_epochs", type=int, default=10, help="number of epochs of training")
-    parser.add_argument("--ratio", type=float, default=0.8, help="portion of samples that is used for training (remaining part used for validation during training)")
-    parser.add_argument("--batch_size", type=int, default=64, help="size of the batches")
+    parser.add_argument("-n", "--n_epochs", type=int, default=10, help="number of epochs of training")
+    parser.add_argument("-r", "--ratio", type=float, default=0.8, help="portion of samples that is used for training (remaining part used for validation during training)")
+    parser.add_argument("-bs", "--batch_size", type=int, default=64, help="size of the batches")
     parser.add_argument("--lr", type=float, default=0.0002, help="adam: learning rate")
-    parser.add_argument("--save_as", type=str, default='model1.pth', help="name a model is to be saved as")
-    parser.add_argument("--train_all", type=bool, default=False, help="run training of all models in the models folder")
+    parser.add_argument("-mn", "--model_name", nargs="*", default = ["Net1"], help="models to be trained, type 'all' to train all models")
+    parser.add_argument("-s", "--save_as", nargs="*", default=['model1.pth'], help="name a trained model is to be saved as")
+    parser.add_argument("-c", "--console_logging", type=bool, default=False, help="Log progress to console?")
     args = parser.parse_args()
+
+    #checking if there are as many models as models' names
+    if len(args.model_name) != len(args.save_as):
+        raise Exception("number of parameters passed to 'model_name' and 'save_as' have to be equal as 1 model is to be saved under 1 name")
 
 
     seed = 42
@@ -55,23 +60,28 @@ if __name__ == '__main__':
     
     device = 'cuda' if torch.cuda.is_available() else "cpu"
     
-    model = Linear()
+    models_to_train = ModelFactory.get_model(args.model_name)
+
     
-    
-    loss_fn = nn.CrossEntropyLoss()
-    optimizer = torch.optim.SGD(model.parameters(), lr=args.lr)
-    
-    val_loss = 999999
-    for t in range(args.n_epochs):
-        print(f"Epoch {t+1}\n-------------------------------")
-        utils.train(train_loader, model, loss_fn, optimizer, device)
+    for i, model in enumerate(models_to_train):
+               
+        loss_fn = nn.CrossEntropyLoss()
+        optimizer = torch.optim.SGD(model.parameters(), lr=args.lr)
         
-        current_val_loss = utils.test(test_loader, model, loss_fn, device)
-        if current_val_loss < val_loss:
-            val_loss = current_val_loss
-            torch.save(model.state_dict(), "lin1.pth")
-            print("Model1 saved")
-    print("Done!", val_loss)
+        val_loss = 999999
+        for t in range(args.n_epochs):
+            if args.console_logging:
+                print(f"Epoch {t+1}\n-------------------------------")
+            utils.train(train_loader, model, loss_fn, optimizer, device)
+            current_val_loss = utils.test(test_loader, model, loss_fn, device)
+            if current_val_loss < val_loss:
+                val_loss = current_val_loss
+                #saving model
+                torch.save(model.state_dict(), args.save_as[i])
+                if args.console_logging:
+                    print("Model saved as " + args.save_as[i])
+        print(args.save_as[i] + " finished!")
+    print("All finished!")
 
 
 
