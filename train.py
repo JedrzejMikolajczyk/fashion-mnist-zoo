@@ -24,10 +24,10 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("-n", "--n_epochs", type=int, default=10, help="number of epochs of training")
     parser.add_argument("-r", "--ratio", type=float, default=0.8, help="portion of samples that is used for training (remaining part used for validation during training)")
-    parser.add_argument("-bs", "--batch_size", type=int, default=64, help="size of the batches")
+    parser.add_argument("-b", "--batch_size", type=int, default=64, help="size of the batches")
     parser.add_argument("--lr", type=float, default=0.0002, help="adam: learning rate")
-    parser.add_argument("-mn", "--model_name", nargs="*", default = ["Net1"], help="models to be trained, type 'all' to train all models")
-    parser.add_argument("-fn", "--file_name", nargs="*", default=['model1.pth'], help="name a trained model is to be saved as")
+    parser.add_argument("-m", "--model_name", nargs="*", default = ["Net1"], help="models to be trained, type 'all' to train all models")
+    parser.add_argument("-f", "--file_name", nargs="*", default=['model1.pth'], help="name a trained model is to be saved as")
     parser.add_argument("-c", "--console_logging", type=bool, default=False, help="Log progress to console?")
     args = parser.parse_args()
 
@@ -37,32 +37,28 @@ if __name__ == '__main__':
 
 
     seed = 42
-    split = args.ratio
     labels = ['t_shirt_top', 'trouser', 'pullover', 'dress', 'coat', 'sandal', 'shirt', 'sneaker', 'bag', 'ankle_boots']
-    
+    device = 'cuda' if torch.cuda.is_available() else "cpu"
     
     transform = transforms.Compose([transforms.ToTensor(),
                                     transforms.Normalize((0.5), (0.5))])
     #Load the training data
     dataset = torchvision.datasets.FashionMNIST(root= './data', train = True, transform=transform, download = True)
     
-    
-    trainset_size = int(split *len(dataset))
+    #spliting training set into training and validation sets
+    trainset_size = int(args.ratio *len(dataset))
     validset_size = len(dataset) - trainset_size
-    
     trainset, validset = torch.utils.data.random_split(dataset, [trainset_size, validset_size], generator=torch.Generator().manual_seed(seed))
     
     # Create data loaders
     train_loader = torch.utils.data.DataLoader(trainset, batch_size=args.batch_size)
-    test_loader = torch.utils.data.DataLoader(validset, batch_size=4, 
+    val_loader = torch.utils.data.DataLoader(validset, batch_size=4, 
                                              shuffle=False)
-    
-    
-    device = 'cuda' if torch.cuda.is_available() else "cpu"
-    
+
+    #load a list of models
     models_to_train = model_factory.get_model(args.model_name)
 
-    
+    #perform training for each model
     for i, model in enumerate(models_to_train):
                
         loss_fn = nn.CrossEntropyLoss()
@@ -70,17 +66,19 @@ if __name__ == '__main__':
         
         val_loss = 999999
         for t in range(args.n_epochs):
+            #train a model and measure loss over validation dataset
+            utils.train(train_loader, model, loss_fn, optimizer, device)
+            current_accuracy, current_val_loss = utils.test(val_loader, model, loss_fn, device)
             if args.console_logging:
                 print(f"Epoch {t+1}\n-------------------------------")
-            utils.train(train_loader, model, loss_fn, optimizer, device)
-            current_val_loss = utils.test(test_loader, model, loss_fn, device)
+                print(f"Test Error: \n Accuracy: {(100*current_accuracy):>0.1f}%, Avg loss: {current_val_loss:>8f} \n")
             if current_val_loss < val_loss:
                 val_loss = current_val_loss
                 #saving model
                 torch.save(model.state_dict(), args.file_name[i])
                 if args.console_logging:
                     print("Model saved as " + args.file_name[i])
-        print(args.save_as[i] + " finished!")
+        print(args.file_name[i] + " finished!")
     print("All finished!")
 
 
