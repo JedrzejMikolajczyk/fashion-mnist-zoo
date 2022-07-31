@@ -18,7 +18,12 @@ Each training and test example is assigned to one of the following labels:
 9. Ankle boot
 
 ## Results
-TODO: add this section
+| Model    |Accuracy     | Loss  |
+| :--------|:-----------:| :-----|
+| cnn  |  89.1% |0.315483
+| feed-forward network |76.9% |0.632524
+| perceptron   |65.6%  |1.531470
+
 
 ## Usage
 ### Training
