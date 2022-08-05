@@ -9,6 +9,7 @@ def save_sample(sample):
 def train(dataloader, model, loss_fn, optimizer, device):
     size = len(dataloader.dataset)
     model.train()
+    running_loss = 0.0
     for batch, (X, y) in enumerate(dataloader):
         X, y = X.to(device), y.to(device)
 
@@ -20,6 +21,12 @@ def train(dataloader, model, loss_fn, optimizer, device):
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
+        
+        #calculating loss for statistics
+        running_loss += loss.item * x.size(0)
+    epoch_loss = running_loss / size
+    return epoch_loss
+    
 
 
 def test(dataloader, model, loss_fn, device):
