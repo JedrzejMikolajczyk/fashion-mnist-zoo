@@ -10,6 +10,7 @@ import torch.optim as optim
 import torchvision
 from torchvision import datasets, transforms
 
+from torch.utils.tensorboard import SummaryWriter
 #from models.net1 import Net1
 
 from models import model_factory
@@ -26,9 +27,11 @@ if __name__ == '__main__':
     parser.add_argument("-r", "--ratio", type=float, default=0.8, help="portion of samples that is used for training (remaining part used for validation during training)")
     parser.add_argument("-b", "--batch_size", type=int, default=64, help="size of the batches")
     parser.add_argument("--lr", type=float, default=0.0002, help="adam: learning rate")
-    parser.add_argument("-m", "--model_name", nargs="*", default = ["Net1"], help="models to be trained, type 'all' to train all models")
-    parser.add_argument("-f", "--file_name", nargs="*", default=['model1.pth'], help="name a trained model is to be saved as")
+    parser.add_argument("-m", "--model_name", nargs="*", default = ["cnn"], help="models to be trained, type 'all' to train all models")
+    parser.add_argument("-f", "--file_name", nargs="*", default=['weights/cnn111.pth'], help="name a trained model is to be saved as")
     parser.add_argument("-c", "--console_logging", type=bool, default=False, help="Log progress to console?")
+    parser.add_argument("-t", "--tensorboard_logging", type=bool, default=True, help="Log accuracy and loss to tensorboard file?")
+    
     args = parser.parse_args()
 
     #checking if there are as many models as models' names
@@ -60,6 +63,8 @@ if __name__ == '__main__':
 
     #perform training for each model
     for i, model in enumerate(models_to_train):
+        if args.tensorboard_logging:
+            tensorboard_writer = SummaryWriter(args.file_name[i])
                
         loss_fn = nn.CrossEntropyLoss()
         optimizer = torch.optim.SGD(model.parameters(), lr=args.lr)
@@ -67,8 +72,12 @@ if __name__ == '__main__':
         val_loss = 999999
         for t in range(args.n_epochs):
             #train a model and measure loss over validation dataset
-            utils.train(train_loader, model, loss_fn, optimizer, device)
+            current_train_loss = utils.train(train_loader, model, loss_fn, optimizer, device)
             current_accuracy, current_val_loss = utils.test(val_loader, model, loss_fn, device)
+            if args.tensorboard_logging:    
+                tensorboard_writer.add_scalar("Training Loss", current_train_loss)
+                tensorboard_writer.add_scalar("Validation Loss", current_val_loss)
+                tensorboard_writer.add_scalar("Accuracy", current_accuracy)
             if args.console_logging:
                 print(f"Epoch {t+1}\n-------------------------------")
                 print(f"Test Error: \n Accuracy: {(100*current_accuracy):>0.1f}%, Avg loss: {current_val_loss:>8f} \n")
