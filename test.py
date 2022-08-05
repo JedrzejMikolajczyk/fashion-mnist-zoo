@@ -13,13 +13,13 @@ from torchvision import datasets, transforms
 import utils
 from models import model_factory
 
-#python test1.py -mn Net1 -fn weights/Net1.pth
+#python test.py -m Net1 -f weights/Net1.pth
+#python test.py -m Net1 cnn linear -f weights/Net1.pth weights/cnn.pth weights/linear.pth
 
 
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument("-b", "--batch_size", type=int, default=64, help="size of the batches")
     parser.add_argument("-m", "--model_name", nargs="*", default = ["cnn"], help="models to be tested, type 'all' to test all models")
     parser.add_argument("-f", "--file_name", nargs="*", default=['weights/cnn.pth'], help="names of saved models to be tested")
     args = parser.parse_args()
@@ -45,7 +45,7 @@ if __name__ == '__main__':
     trainset, validset = torch.utils.data.random_split(dataset, [trainset_size, validset_size], generator=torch.Generator().manual_seed(seed))
         
     # Create data loaders
-    train_loader = torch.utils.data.DataLoader(trainset, batch_size=args.batch_size)
+    train_loader = torch.utils.data.DataLoader(trainset, batch_size=4)
     test_loader = torch.utils.data.DataLoader(testset, batch_size=4, 
                                              shuffle=False)
     
@@ -63,6 +63,7 @@ if __name__ == '__main__':
         test_acc, test_loss = utils.test(test_loader, model, loss_fn, device)
         print(f"On Training dataset: \n Accuracy: {(100*train_acc):>0.1f}%, Avg loss: {train_loss:>8f} \n")
         print(f"On Testing dataset: \n Accuracy: {(100*test_acc):>0.1f}%, Avg loss: {test_loss:>8f} \n")
+        print('-'*10)
     
 
 
