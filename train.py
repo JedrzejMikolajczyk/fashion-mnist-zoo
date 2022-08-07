@@ -28,9 +28,9 @@ if __name__ == '__main__':
     parser.add_argument("-b", "--batch_size", type=int, default=64, help="size of the batches")
     parser.add_argument("--lr", type=float, default=0.0002, help="adam: learning rate")
     parser.add_argument("-m", "--model_name", nargs="*", default = ["cnn"], help="models to be trained, type 'all' to train all models")
-    parser.add_argument("-f", "--file_name", nargs="*", default=['weights/cnn111.pth'], help="name a trained model is to be saved as")
-    parser.add_argument("-c", "--console_logging", type=bool, default=False, help="Log progress to console?")
-    parser.add_argument("-t", "--tensorboard_logging", type=bool, default=True, help="Log accuracy and loss to tensorboard file?")
+    parser.add_argument("-f", "--file_name", nargs="*", default=['weights/cnn1.pth'], help="name a trained model is to be saved as")
+    parser.add_argument("-c", "--console_logging", type=bool, default=True, help="Log progress to console?")
+    parser.add_argument("-t", "--tensorboard_file_name", default=None, help="Log accuracy and loss to tensorboard file if this argument is not None")
     
     args = parser.parse_args()
 
@@ -63,8 +63,8 @@ if __name__ == '__main__':
 
     #perform training for each model
     for i, model in enumerate(models_to_train):
-        if args.tensorboard_logging:
-            tensorboard_writer = SummaryWriter(args.file_name[i])
+        if args.tensorboard_file_name:
+            tensorboard_writer = SummaryWriter('boards/' + args.tensorboard_file_name)
                
         loss_fn = nn.CrossEntropyLoss()
         optimizer = torch.optim.SGD(model.parameters(), lr=args.lr)
@@ -74,10 +74,10 @@ if __name__ == '__main__':
             #train a model and measure loss over validation dataset
             current_train_loss = utils.train(train_loader, model, loss_fn, optimizer, device)
             current_accuracy, current_val_loss = utils.test(val_loader, model, loss_fn, device)
-            if args.tensorboard_logging:    
-                tensorboard_writer.add_scalar("Training Loss", current_train_loss)
-                tensorboard_writer.add_scalar("Validation Loss", current_val_loss)
-                tensorboard_writer.add_scalar("Accuracy", current_accuracy)
+            if args.tensorboard_file_name:    
+                tensorboard_writer.add_scalar("Training Loss", current_train_loss,t)
+                tensorboard_writer.add_scalar("Validation Loss", current_val_loss, t)
+                tensorboard_writer.add_scalar("Accuracy", current_accuracy, t)
             if args.console_logging:
                 print(f"Epoch {t+1}\n-------------------------------")
                 print(f"Test Error: \n Accuracy: {(100*current_accuracy):>0.1f}%, Avg loss: {current_val_loss:>8f} \n")
