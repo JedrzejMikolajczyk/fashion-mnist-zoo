@@ -23,7 +23,7 @@ def train(dataloader, model, loss_fn, optimizer, device):
         optimizer.step()
         
         #calculating loss for statistics
-        running_loss += loss.item * X.size(0)
+        running_loss += loss * X.size(0)
     epoch_loss = running_loss / size
     return epoch_loss
     
