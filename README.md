@@ -21,6 +21,7 @@ Each training and test example is assigned to one of the following labels:
 | Model    |Accuracy     | Loss  |
 | :--------|:-----------:| :-----|
 | cnn  |  89.1% |0.315483
+| ResNet | 85.6% |0.405437
 | feed-forward network |76.9% |0.632524
 | perceptron   |65.6%  |1.531470
 
@@ -62,6 +63,7 @@ Optional arguments:
 - [x] CNN
 - [x] feed-forward network
 - [x] multi-class perceptron
+- [x] ResNet
 - [ ] GAN
 - [ ] Encoder + some model
 - [ ] Many more
